@@ -1,7 +1,4 @@
 local pluginKey = "navneetankut/tiled"
-
--- url: https://gist.github.com/navneetankur/99632596a0d3ee34680df8187977a64e/tiled export.lua
--- ghgid: 99632596a0d3ee34680df8187977a64e
 local LAST_PATH_KEY = "lastpath"
 
 local spr = app.activeSprite
@@ -15,7 +12,6 @@ local TILESIZE = 16
 local fs = app.fs
 local pc = app.pixelColor
 local path_without_ext = fs.filePathAndTitle(spr.filename)
-local name_without_ext = fs.fileTitle(spr.filename)
 local tileset = spr.tilesets[1]
 local image_n = 0
 local tileset_n = 0
@@ -40,7 +36,9 @@ local function get_path_without_ext()
 	dlg:button {text = "Ok", focus = true}
 	dlg:show()
 	local new_path = dlg.data["file"]
-	spr.properties(pluginKey)[LAST_PATH_KEY] = new_path
+	if spr.properties(pluginKey)[LAST_PATH_KEY] ~= new_path then
+		spr.properties(pluginKey)[LAST_PATH_KEY] = new_path
+	end
 	return fs.filePathAndTitle(new_path)
 end
 
@@ -131,21 +129,18 @@ local function export_tileset(tileset, no_of_cols)
   local size = grid.tileSize
   if #tileset > 0 then
     local spec = spr.spec
-    spec.width = TILESIZE * no_of_cols
-    spec.height = TILESIZE * math.ceil((#tileset-1)/no_of_cols)
+    spec.width = TILESIZE
+    spec.height = TILESIZE
     local image = Image(spec)
-    image:clear()
     for i = 0,#tileset-2 do
       local tile = tileset:getTile(i+1)
-	  local row = math.floor(i/no_of_cols)
-	  local col = i - row * no_of_cols
-      image:drawImage(tile, (col)*TILESIZE, row*TILESIZE)
+	  image:clear()
+      image:drawImage(tile, 0, 0)
+      image:saveAs(path_without_ext.."/"..i..".png")
     end
 
     tileset_n = tileset_n + 1
     -- local imageFn = fs.joinPath(output_folder, "tileset" .. tileset_n .. ".png")
-    local imageFn = path_without_ext .. ".png"
-    image:saveAs(imageFn)
   end
   return #tileset - 1
 end
@@ -215,6 +210,7 @@ local function get_tileset_index(layer)
   end
   return -1
 end
+
 local function get_xproperty(name, value)
 	local xproperty = xml_element("property")
 	local prop_type = type(value)
@@ -226,7 +222,6 @@ local function get_xproperty(name, value)
 	xml_add_attr(xproperty, xml_attr("type", prop_type))
 	return xproperty
 end
-
 local function export_layer(layer)
 	if layer.isImage then
 		--slaxml start
@@ -256,6 +251,7 @@ local function export_layer(layer)
 		if has_property then
 			xml_add_child(t, xproperties)
 		end
+
 		-- fill_user_data(t, layer)
 		return t
 	end
@@ -355,22 +351,10 @@ xml_add_attr(map, xml_attr("tileheight",TILESIZE))
 xml_add_attr(map, xml_attr("infinite","0"))
 xml_add_attr(map, xml_attr("nextobjectid","1"))
 xml_add_child(tmx, map)
--- add sprite properties to map
-local xproperties = xml_element("properties")
-local has_property =false
-for k,v in pairs(app.sprite.properties) do
-	local xproperty = get_xproperty(k,v)
-	xml_add_child(xproperties, xproperty)
-	has_property = true
-end
-if has_property then
-	xml_add_child(map, xproperties)
-end
-
 local xtileset = xml_element("tileset")
 xml_add_attr(xtileset, xml_attr("firstgid", "1"))
 -- xml_add_attr(xtileset, xml_attr("source", "tileset1.tsx"))
-xml_add_attr(xtileset, xml_attr("source", name_without_ext..".tsx"))
+xml_add_attr(xtileset, xml_attr("source", path_without_ext..".tsx"))
 xml_add_child(map, xtileset)
 
 local layers = export_layers(spr.layers)
@@ -388,6 +372,7 @@ local xml = SLAXML:xml(tmx, {indent = "\t"})
 file:write(xml)
 file:close()
 
+fs.makeDirectory(path_without_ext)
 local tileset_max_no_of_cols = 4
 local no_of_tiles = export_tileset(spr.tilesets[1], tileset_max_no_of_cols)
 local tileset_width = tileset_max_no_of_cols
@@ -401,7 +386,6 @@ xml_add_attr(xtileset, xml_attr("tiledversion", "1.10.2"))
 xml_add_attr(xtileset, xml_attr("name", filename_without_ext))
 xml_add_attr(xtileset, xml_attr("tilewidth",TILESIZE))
 xml_add_attr(xtileset, xml_attr("tileheight",TILESIZE))
-xml_add_attr(xtileset, xml_attr("tilecount",no_of_tiles))
 local transformations = xml_element("transformations")
 xml_add_attr(transformations, xml_attr("hflip", "1"))
 xml_add_attr(transformations, xml_attr("vflip", "1"))
@@ -409,11 +393,11 @@ xml_add_attr(transformations, xml_attr("rotate", "1"))
 xml_add_attr(transformations, xml_attr("preferuntransformed", "1"))
 xml_add_child(xtileset, transformations)
 
-local image = xml_element("image")
-xml_add_attr(image, xml_attr("source", name_without_ext..".png"))
-xml_add_attr(image, xml_attr("width", tileset_width * TILESIZE))
-xml_add_attr(image, xml_attr("height", tileset_height))
-xml_add_child(xtileset, image)
+-- local image = xml_element("image")
+-- xml_add_attr(image, xml_attr("source", path_without_ext..".png"))
+-- xml_add_attr(image, xml_attr("width", tileset_width * TILESIZE))
+-- xml_add_attr(image, xml_attr("height", tileset_height))
+-- xml_add_child(xtileset, image)
 
 local function cross(a, b, o)
    return (a[1] - o[1]) * (b[2] - o[2]) - (a[2] - o[2]) * (b[1] - o[1])
@@ -453,18 +437,11 @@ for i=1,#tileset do
 	local has_property = false
 	if tile then
 		local xtile = xml_element("tile")
-		xml_add_attr(xtile, xml_attr("id", i - 1))
+		local id = pc.tileI(tile.index) - 1
+		xml_add_attr(xtile, xml_attr("id", i-1))
 		local xproperties = xml_element("properties")
-		xml_add_child(xtile, xproperties)
 		for name,value in pairs(tile.properties) do
-			local xproperty = xml_element("property")
-			local prop_type = type(value)
-			if prop_type == "boolean" then
-				prop_type = "bool"
-			end
-			xml_add_attr(xproperty, xml_attr("name", name))
-			xml_add_attr(xproperty, xml_attr("value", value))
-			xml_add_attr(xproperty, xml_attr("type", prop_type))
+			local xproperty = get_xproperty(name, value)
 			xml_add_child(xproperties, xproperty)
 			has_property = true
 
@@ -505,8 +482,14 @@ for i=1,#tileset do
 
 		end
 		if has_property then
-			xml_add_child(xtileset, xtile)
+			xml_add_child(xtile, xproperties)
 		end
+		xml_add_child(xtileset, xtile)
+		local ximage = xml_element("image");
+		xml_add_child(xtile, ximage);
+		xml_add_attr(ximage, xml_attr("width", TILESIZE));
+		xml_add_attr(ximage, xml_attr("height", TILESIZE));
+		xml_add_attr(ximage, xml_attr("source", path_without_ext.."/"..(i - 1)..".png"))
 	end
 end
 

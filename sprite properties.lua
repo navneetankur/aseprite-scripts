@@ -1,15 +1,4 @@
-----------------------------------------------------------------------
-
--- url: https://gist.github.com/navneetankur/a597474641b8e5a870323992cf8cbfd0/layer properties.lua
--- ghgid: a597474641b8e5a870323992cf8cbfd0
--- A customizable toolbar that can be useful in touch-like devices
--- (e.g. on a Microsoft Surface).
---
--- Feel free to add new commands and modify it as you want.
-----------------------------------------------------------------------
-
-
-local show_layer_properties_dialogue
+local show_sprite_properties_dialogue
 local function change_dialog(dlg_old)
 	local dtype = dlg_old.data["property_type"]
 	if not dtype then dtype = "string" end
@@ -40,16 +29,16 @@ local function change_dialog(dlg_old)
 		onclick = function ()
 				local name = add_prop_dlg.data["property_name"]
 				local pvalue = add_prop_dlg.data["property_value"]
-				app.layer.properties[name] = pvalue
+				app.sprite.properties[name] = pvalue
 				add_prop_dlg:close()
-				show_layer_properties_dialogue()
+				show_sprite_properties_dialogue()
 			end,
 	}
 	add_prop_dlg:show()
 end
-show_layer_properties_dialogue = function ()
-	local layer = app.layer
-	local dlg = Dialog("Layer: ".. layer.name)
+show_sprite_properties_dialogue = function ()
+	local sprite = app.sprite
+	local dlg = Dialog("Sprite: ".. sprite.filename)
 
 	:button {
 		text = "ok",
@@ -61,17 +50,17 @@ show_layer_properties_dialogue = function ()
 			change_dialog(Dialog(""))
 		end
 	}
-	for key,value in pairs(layer.properties) do
+	for key,value in pairs(sprite.properties) do
 		dlg:label{ id = key, label = key, text = tostring(value) }
 		:button { text = "-", onclick = function ()
-				layer.properties[key] = nil
+				sprite.properties[key] = nil
 				dlg:close()
-				show_layer_properties_dialogue()
+				show_sprite_properties_dialogue()
 			end }
 	end
 	dlg:show()
 end
-show_layer_properties_dialogue()
+show_sprite_properties_dialogue()
 
 
 

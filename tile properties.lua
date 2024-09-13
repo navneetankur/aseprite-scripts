@@ -1,4 +1,7 @@
 ----------------------------------------------------------------------
+
+-- url: https://gist.github.com/navneetankur/d6769bd941ec80deacb089d04e5604c0/tile properties.lua
+-- ghgid: d6769bd941ec80deacb089d04e5604c0
 -- A customizable toolbar that can be useful in touch-like devices
 -- (e.g. on a Microsoft Surface).
 --

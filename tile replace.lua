@@ -1,4 +1,7 @@
 local pluginKey = "navneetankut/tiled"
+
+-- url: https://gist.github.com/navneetankur/b4ab3492d11decd974e8c8864d22ce29/tile replace.lua
+-- ghgid: b4ab3492d11decd974e8c8864d22ce29
 local LAST_PATH_KEY = "lastpath"
 
 local spr = app.activeSprite
