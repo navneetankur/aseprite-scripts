@@ -275,6 +275,7 @@ tsj["name"] =  filename_without_ext
 tsj["tilewidth"] = TILESIZE
 tsj["tileheight"] = TILESIZE
 tsj["tilecount"] = no_of_tiles
+tsj["objectalignment"] = "topleft"
 tsj.transformations = {}
 local transformations = tsj.transformations
 transformations.hflip = true
