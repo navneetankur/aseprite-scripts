@@ -276,6 +276,9 @@ tsj["tilewidth"] = TILESIZE
 tsj["tileheight"] = TILESIZE
 tsj["tilecount"] = no_of_tiles
 tsj["objectalignment"] = "topleft"
+tsj["columns"] = tileset_max_no_of_cols
+tsj["margin"] = 0
+tsj["spacing"] = 0
 tsj.transformations = {}
 local transformations = tsj.transformations
 transformations.hflip = true
@@ -320,7 +323,7 @@ local function convexHull(points)
    return lower
 end
 local object_id = 2
-jtileset.tiles = {}
+tsj.tiles = {}
 for i=1,#tileset do
 	local tile = tileset:tile(i)
 	if tile then
@@ -374,8 +377,8 @@ for i=1,#tileset do
 			end
 
 		end
-		if not next(jtile.properties) then
-			table.insert(jtileset.tiles, jtile)
+		if next(jtile.properties) then
+			table.insert(tsj.tiles, jtile)
 		end
 	end
 end
